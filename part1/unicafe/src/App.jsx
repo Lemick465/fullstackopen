@@ -2,7 +2,14 @@ import { useState } from "react";
 
 const Title = ({ text }) => <h1>{text}</h1>;
 
-const StatisticLine = ({ text, value }) => <div>{text} {value}</div>
+const StatisticLine = ({ text, value }) => {
+  return(
+      <tr>
+        <td>{text}</td>
+        <td>{value}</td>
+      </tr>
+    )
+  }
 
 const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>;
 
@@ -71,12 +78,16 @@ const App = () => {
       <Button text="neutral" onClick={handleOnNeutralClick}/>
       <Button text="bad" onClick={handleOnBadClick}/>
       <Title text="statistics" />
-      <StatisticLine text="good" value={good} />
-      <StatisticLine text="neutral" value={neutral} />
-      <StatisticLine text="bad" value={bad} />
-      <StatisticLine text="all" value={total} />
-      <StatisticLine text="average" value={average} />
-      <StatisticLine text="positive" value={posPercentage} />
+      <table>
+        <tbody>
+          <StatisticLine text="good" value={good} />
+          <StatisticLine text="neutral" value={neutral} />
+          <StatisticLine text="bad" value={bad} />
+          <StatisticLine text="all" value={total} />
+          <StatisticLine text="average" value={average.toFixed(1)} />
+          <StatisticLine text="positive" value={posPercentage.toFixed(1) + "%"} />
+        </tbody>
+      </table>
     </div>
   );
 };
