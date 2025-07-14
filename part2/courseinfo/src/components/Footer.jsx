@@ -1,5 +1,10 @@
-const Footer = (props) => {
-  return <p>Number of exercises {props.total}</p>;
+const Footer = ({ courseParts }) => {
+  return (
+    <h3>
+      total of {courseParts.reduce((total, part) =>
+        total + part.exercises, 0)} exercises
+    </h3>
+  );
 };
 
-export default Footer
+export default Footer;
