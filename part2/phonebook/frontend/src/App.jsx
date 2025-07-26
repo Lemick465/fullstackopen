@@ -40,6 +40,7 @@ const App = () => {
             ? Math.max(...persons.map((person) => person.id)) + 1
             : 1,
       };
+      axios.post("http://localhost:3001/persons", newPerson)
       setPersons(persons.concat(newPerson));
       setNewName("");
       setNewNumber("");
