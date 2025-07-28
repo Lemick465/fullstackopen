@@ -35,10 +35,7 @@ const App = () => {
       const newPerson = {
         name: newName,
         number: newNumber,
-        id:
-          persons.length > 0
-            ? Math.max(...persons.map((person) => person.id)) + 1
-            : 1,
+        id: (persons.length > 0 ? Math.max(...persons.map((person) => person.id)) + 1: 1).toString(),
       };
       axios.post("http://localhost:3001/persons", newPerson)
       setPersons(persons.concat(newPerson));
