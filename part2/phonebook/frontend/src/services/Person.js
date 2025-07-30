@@ -22,4 +22,4 @@ const reomove = (id) => {
     return request.then((response) => response.data)
 }
 
-export {getAll, create, update, reomove}
+export default {getAll, create, update, reomove}

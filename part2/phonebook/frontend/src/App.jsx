@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios"
+import personService from "./services/Person"
 import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
 import Filter from "./components/Filter";
@@ -37,18 +37,21 @@ const App = () => {
         number: newNumber,
         id: (persons.length > 0 ? Math.max(...persons.map((person) => person.id)) + 1: 1).toString(),
       };
-      axios.post("http://localhost:3001/persons", newPerson)
-      setPersons(persons.concat(newPerson));
-      setNewName("");
-      setNewNumber("");
+      personService
+        .create(newPerson)
+        .then((newEntry) => {
+          setPersons(persons.concat(newEntry));
+          setNewName("");
+          setNewNumber("");
+        })
     }
   };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((response) => {
-        setPersons(response.data)
+    personService
+      .getAll()
+      .then((initialNotes) => {
+        setPersons(initialNotes)
       })
   }, [])
 
