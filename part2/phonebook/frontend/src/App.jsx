@@ -55,6 +55,10 @@ const App = () => {
       })
   }, [])
 
+  const handleDelete = () => {
+    console.log("Deleted")
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -70,7 +74,7 @@ const App = () => {
         number={newNumber} />
 
       <h3>Numbers</h3>
-      <Persons persons={persons} />
+      <Persons persons={persons} onDeleteClick={handleDelete}/>
     </div>
   );
 };
