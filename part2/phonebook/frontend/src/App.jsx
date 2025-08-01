@@ -10,6 +10,14 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    personService
+      .getAll()
+      .then((initialNotes) => {
+        setPersons(initialNotes)
+      })
+  }, [])
+
   const handleNameChange = (event) => {
     setNewName(event.target.value);
   };
@@ -46,14 +54,6 @@ const App = () => {
         })
     }
   };
-
-  useEffect(() => {
-    personService
-      .getAll()
-      .then((initialNotes) => {
-        setPersons(initialNotes)
-      })
-  }, [])
 
   const handleDelete = () => {
     console.log("Deleted")
