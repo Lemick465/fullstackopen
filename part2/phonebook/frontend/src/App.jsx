@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import personService from "./services/Person"
-import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
 import Filter from "./components/Filter";
+import Person from "./components/Person";
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -55,9 +55,14 @@ const App = () => {
     }
   };
 
-  const handleDelete = () => {
-    console.log("Deleted")
+  const handleDeleteClick = (id) => {
+    personService
+      .remove(id)
+      .then((deletedPerson) =>
+        setPersons(persons.filter((person) => person.id !== deletedPerson.id))
+      )
   }
+
 
   return (
     <div>
@@ -74,7 +79,12 @@ const App = () => {
         number={newNumber} />
 
       <h3>Numbers</h3>
-      <Persons persons={persons} onDeleteClick={handleDelete}/>
+      {persons.map((person) => (
+        <Person key={person.id}
+          person={person}
+          onDelete={() => handleDeleteClick(person.id)}/>
+      ))}
+
     </div>
   );
 };
