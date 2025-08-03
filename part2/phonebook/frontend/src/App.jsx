@@ -55,12 +55,15 @@ const App = () => {
     }
   };
 
-  const handleDeleteClick = (id) => {
-    personService
-      .remove(id)
-      .then((deletedPerson) =>
-        setPersons(persons.filter((person) => person.id !== deletedPerson.id))
-      )
+  const handleDeleteClick = (id, personName) => {
+    const confirmed = window.confirm(`Delete ${personName} ?`)
+    if(confirmed){
+      personService
+        .remove(id)
+        .then((deletedPerson) =>
+          setPersons(persons.filter((person) => person.id !== deletedPerson.id))
+        )
+    }
   }
 
 
@@ -82,7 +85,7 @@ const App = () => {
       {persons.map((person) => (
         <Person key={person.id}
           person={person}
-          onDelete={() => handleDeleteClick(person.id)}/>
+          onDelete={() => handleDeleteClick(person.id, person.name)}/>
       ))}
 
     </div>
