@@ -48,6 +48,12 @@ const App = () => {
           .then((updatedObject) => {
             setPersons(persons.map((person) => person.id === updatedObject.id ? updatedObject : person))
           })
+          .catch((error) => {
+            setErrorMessage(`Information of ${newObject.name} has already been removed from server`)
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
       }
     } else {
       const newPerson = {
@@ -61,7 +67,7 @@ const App = () => {
           setErrorMessage(`Added ${newEntry.name}`)
           setTimeout(() => {
             setErrorMessage(null)
-          }, 3000)
+          }, 5000)
           setPersons(persons.concat(newEntry));
           setNewName("");
           setNewNumber("");
