@@ -12,6 +12,10 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
 const generateId = () => {
   const maxId =
     persons.length > 0 ? Math.max(...persons.map((person) => person.id)) : 0;
@@ -100,6 +104,8 @@ app.post("/api/persons", (request, response) => {
   persons = persons.concat(newPerson);
   response.json(newPerson);
 });
+
+app.use(unknownEndpoint);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
