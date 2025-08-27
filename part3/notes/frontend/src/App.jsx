@@ -29,7 +29,7 @@ const App = () => {
       .create("http://localhost:3001/notes", noteObject)
       .then((initialNotes) => {
         setNewNote(notes.concat(initialNotes))
-        setNewNote('')
+        setNewNote("")
       })
 
     setNewNote("")
