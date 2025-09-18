@@ -12,7 +12,7 @@ const App = () => {
 
   useEffect(() => {
     noteService
-      .getAll("http://localhost:3001/notes")
+      .getAll()
       .then((initialNotes) => {
         setNotes(initialNotes)
       })
@@ -26,7 +26,7 @@ const App = () => {
     }
 
     noteService
-      .create("http://localhost:3001/notes", noteObject)
+      .create(noteObject)
       .then((initialNotes) => {
         setNewNote(notes.concat(initialNotes))
         setNewNote('')
@@ -40,12 +40,11 @@ const App = () => {
   }
 
   const toggleImportanceOf = (id) => {
-    const url = `http://localhost:3001/notes/${id}`
     const note = notes.find(n => n.id === id)
     const changedNote = { ...note, important: !note.important}
 
     noteService
-      .update(url, changedNote)
+      .update(id, changedNote)
       .then((initialNotes) => {
         setNotes(notes.map((note) => note.id === id ? initialNotes : note))
     }).catch((error) => {
