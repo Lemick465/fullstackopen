@@ -42,16 +42,15 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-  if (!person) {
-    response.status(404).json({
-      error: "Person not found!",
-    });
-  }
-  const newPersons = persons.filter((person) => person.id !== id);
-  persons = newPersons;
-  response.status(204).end();
+  Person.findById(request.params.id).then((result) => {
+    if (!result) {
+      return response.status(404).end();
+    } else {
+      Person.findByIdAndDelete(request.params.id).then((result) => {
+        response.status(204).end();
+      });
+    }
+  });
 });
 
 app.post("/api/persons", (request, response) => {
