@@ -35,19 +35,19 @@ app.get("/info", (request, response) => {
   );
 });
 
-app.get("/api/persons", (request, response) => {
+app.get("/api/persons", (request, response, next) => {
   Person.find({}).then((persons) => {
     response.json(persons);
-  });
+  }).catch((error) => next(error))
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   Person.findById(request.params.id).then((person) => {
     response.json(person);
-  });
+  }).catch((error) => next(error))
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   Person.findById(request.params.id).then((result) => {
     if (!result) {
       return response.status(404).end();
@@ -56,7 +56,8 @@ app.delete("/api/persons/:id", (request, response) => {
         response.status(204).end();
       });
     }
-  });
+  })
+  .catch((error) => next(error))
 });
 
 app.post("/api/persons", (request, response) => {
@@ -78,8 +79,24 @@ app.post("/api/persons", (request, response) => {
   });
 });
 
-app.use(errorHandler);
+app.put("/api/persons/:id", (request, response, next) => {
+  const { name, number } = request.body;
+  Person.findById(request.params.id).then((person) => {
+    if (!person) {
+      return response.status(404).end();
+    }else if(person.name === name && person.number === number){
+      return response.send({ error: "No update to be made."})
+    }else if(person.name === name && person.number !== number){
+      person.number = number
+      person.save().then((updatedPerson) => {
+        return response.json(updatedPerson)
+      })
+    }
+  }).catch((error) => next(error))
+});
+
 app.use(unknownEndpoint);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
