@@ -8,18 +8,24 @@ morgan.token("body", (request) => {
   return JSON.stringify(request.body);
 });
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+  if (error.message === "CastError") {
+    return response.status(400).send({ error: "malformated id" });
+  }
+  next(error);
+};
+
 app.use(cors());
 app.use(express.static("dist"));
 app.use(express.json());
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :body")
 );
-
-const generateId = () => {
-  const maxId =
-    persons.length > 0 ? Math.max(...persons.map((person) => person.id)) : 0;
-  return maxId + 1;
-};
 
 app.get("/info", (request, response) => {
   response.send(
@@ -71,6 +77,9 @@ app.post("/api/persons", (request, response) => {
     response.json(savedPerson);
   });
 });
+
+app.use(errorHandler);
+app.use(unknownEndpoint);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
