@@ -72,6 +72,7 @@ const App = () => {
           setNewName("");
           setNewNumber("");
         })
+        .catch((error) => console.log(error.response.data.error))
     }
   };
 
