@@ -57,3 +57,35 @@ describe('total likes', () => {
     assert.strictEqual(result, 442)
   })
 })
+
+test('favorite blog', () => {
+  const blogs = [
+    {
+      title: 'Exploring the JavaScript Universe',
+      author: 'Alice Johnson',
+      url: 'https://example.com/js-universe',
+      likes: 125,
+    },
+    {
+      title: 'Deep Dive into MongoDB',
+      author: 'Bob Smith',
+      url: 'https://example.com/mongodb-deep-dive',
+      likes: 98,
+    },
+    {
+      title: 'Understanding Async/Await',
+      author: 'Carol Lee',
+      url: 'https://example.com/async-await-guide',
+      likes: 142,
+    },
+    {
+      title: 'A Guide to Modern Web Development',
+      author: 'David Kim',
+      url: 'https://example.com/modern-web-dev',
+      likes: 77,
+    },
+  ]
+
+  const result = listHelper.favoriteBlog(blogs)
+  assert.deepStrictEqual(result, blogs[2])
+})
