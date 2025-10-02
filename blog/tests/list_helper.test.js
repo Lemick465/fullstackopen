@@ -58,34 +58,100 @@ describe('total likes', () => {
   })
 })
 
-test('favorite blog', () => {
-  const blogs = [
-    {
-      title: 'Exploring the JavaScript Universe',
-      author: 'Alice Johnson',
-      url: 'https://example.com/js-universe',
-      likes: 125,
-    },
-    {
-      title: 'Deep Dive into MongoDB',
-      author: 'Bob Smith',
-      url: 'https://example.com/mongodb-deep-dive',
-      likes: 98,
-    },
-    {
-      title: 'Understanding Async/Await',
-      author: 'Carol Lee',
-      url: 'https://example.com/async-await-guide',
-      likes: 142,
-    },
-    {
-      title: 'A Guide to Modern Web Development',
-      author: 'David Kim',
-      url: 'https://example.com/modern-web-dev',
-      likes: 77,
-    },
-  ]
+describe('blogs', () => {
+  test('favorite blog', () => {
+    const blogs = [
+      {
+        title: 'Exploring the JavaScript Universe',
+        author: 'Alice Johnson',
+        url: 'https://example.com/js-universe',
+        likes: 125,
+      },
+      {
+        title: 'Deep Dive into MongoDB',
+        author: 'Bob Smith',
+        url: 'https://example.com/mongodb-deep-dive',
+        likes: 98,
+      },
+      {
+        title: 'Understanding Async/Await',
+        author: 'Carol Lee',
+        url: 'https://example.com/async-await-guide',
+        likes: 142,
+      },
+      {
+        title: 'A Guide to Modern Web Development',
+        author: 'David Kim',
+        url: 'https://example.com/modern-web-dev',
+        likes: 77,
+      },
+    ]
 
-  const result = listHelper.favoriteBlog(blogs)
-  assert.deepStrictEqual(result, blogs[2])
+    const result = listHelper.favoriteBlog(blogs)
+    assert.deepStrictEqual(result, blogs[2])
+  })
+
+  test('author with most blogs', () => {
+    const blogs = [
+      {
+        title: 'Exploring the JavaScript Universe',
+        author: 'Alice Johnson',
+        url: 'https://example.com/js-universe',
+        likes: 125,
+      },
+      {
+        title: 'Deep Dive into MongoDB',
+        author: 'Bob Smith',
+        url: 'https://example.com/mongodb-deep-dive',
+        likes: 98,
+      },
+      {
+        title: 'Understanding Async/Await',
+        author: 'Carol Lee',
+        url: 'https://example.com/async-await-guide',
+        likes: 142,
+      },
+      {
+        title: 'A Guide to Modern Web Development',
+        author: 'Bob Smith',
+        url: 'https://example.com/modern-web-dev',
+        likes: 77,
+      },
+    ]
+
+    const result = listHelper.mostBlogs(blogs)
+    assert.deepStrictEqual(result, { author: 'Bob Smith', blogs: 2 })
+  })
+
+  test('author with most likes', () => {
+    const blogs = [
+      {
+        title: 'Exploring the JavaScript Universe',
+        author: 'Alice Johnson',
+        url: 'https://example.com/js-universe',
+        likes: 125,
+      },
+      {
+        title: 'Deep Dive into MongoDB',
+        author: 'Bob Smith',
+        url: 'https://example.com/mongodb-deep-dive',
+        likes: 98,
+      },
+      {
+        title: 'Understanding Async/Await',
+        author: 'Carol Lee',
+        url: 'https://example.com/async-await-guide',
+        likes: 142,
+      },
+      {
+        title: 'A Guide to Modern Web Development',
+        author: 'Bob Smith',
+        url: 'https://example.com/modern-web-dev',
+        likes: 77,
+      },
+    ]
+
+    const result = listHelper.mostLikes(blogs)
+    assert.deepStrictEqual(result, { author: 'Bob Smith', likes: 175 })
+  })
 })
