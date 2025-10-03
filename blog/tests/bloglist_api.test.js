@@ -74,6 +74,20 @@ test('set default value if likes property is missing', async () => {
   assert.strictEqual(recentSave.likes, 0)
 })
 
+test('status code 400 is returned if title or url is missing', async () => {
+  const newBlog = {
+    // title: 'A blog created by test',
+    author: 'Test Author',
+    url: 'http://example.com/test-blog',
+    likes: 0,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
