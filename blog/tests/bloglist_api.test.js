@@ -54,6 +54,26 @@ test('check if blogs are saved successfully', async () => {
   assert(titles.includes(newBlog.title))
 })
 
+test('set default value if likes property is missing', async () => {
+  const newBlog = {
+    title: 'A blog created by test',
+    author: 'Test Author',
+    url: 'http://example.com/test-blog',
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  const recentSave = blogsAtEnd.find((blog) => blog.title === newBlog.title)
+  const likesFieldExist = Object.hasOwn(recentSave, 'likes')
+  assert.strictEqual(likesFieldExist, true)
+  assert.strictEqual(recentSave.likes, 0)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
