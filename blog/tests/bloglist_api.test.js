@@ -27,9 +27,31 @@ test('all blogs are returned', async () => {
 })
 
 test('check if blog has a unique id', async () => {
-  const response = await api.get('/api/blogs')
-  const verifyId = Object.hasOwn(response.body[0], 'id')
-  assert.strictEqual(verifyId, true)
+  const blogs = await helper.blogsInDB()
+  const verifyIdExist = Object.hasOwn(blogs[0], 'id')
+  assert.strictEqual(verifyIdExist, true)
+})
+
+test('check if blogs are saved successfully', async () => {
+  const initialBlogs = await helper.blogsInDB()
+  const newBlog = {
+    title: 'A blog created by test',
+    author: 'Test Author',
+    url: 'http://example.com/test-blog',
+    likes: 0,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1)
+
+  const titles = blogsAtEnd.map((blog) => blog.title)
+  assert(titles.includes(newBlog.title))
 })
 
 after(async () => {
