@@ -26,6 +26,12 @@ test('all blogs are returned', async () => {
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
+test('check if blog has a unique id', async () => {
+  const response = await api.get('/api/blogs')
+  const verifyId = Object.hasOwn(response.body[0], 'id')
+  assert.strictEqual(verifyId, true)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
