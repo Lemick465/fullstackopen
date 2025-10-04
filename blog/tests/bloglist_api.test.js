@@ -34,6 +34,7 @@ test('check if blog has a unique id', async () => {
 
 test('check if blogs are saved successfully', async () => {
   const initialBlogs = await helper.blogsInDB()
+
   const newBlog = {
     title: 'A blog created by test',
     author: 'Test Author',
@@ -48,10 +49,11 @@ test('check if blogs are saved successfully', async () => {
     .expect('Content-Type', /application\/json/)
 
   const blogsAtEnd = await helper.blogsInDB()
+
   assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1)
 
   const titles = blogsAtEnd.map((blog) => blog.title)
-  assert(titles.includes(newBlog.title))
+  assert.strictEqual(titles.includes(newBlog.title), true)
 })
 
 test('set default value if likes property is missing', async () => {
@@ -82,10 +84,20 @@ test('status code 400 is returned if title or url is missing', async () => {
     likes: 0,
   }
 
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(400)
+  await api.post('/api/blogs').send(newBlog).expect(400)
+})
+
+test('deletes a blog successfully', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const blogToDelete = blogsAtStart[0]
+
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  const titlesAtEnd = blogsAtEnd.map((b) => b.title)
+
+  assert.strictEqual(blogsAtStart.length - 1, blogsAtEnd.length)
+  assert.strictEqual(titlesAtEnd.includes(blogToDelete.title), false)
 })
 
 after(async () => {
