@@ -87,7 +87,7 @@ test('status code 400 is returned if title or url is missing', async () => {
   await api.post('/api/blogs').send(newBlog).expect(400)
 })
 
-test('deletes a blog successfully', async () => {
+test('delete a blog successfully', async () => {
   const blogsAtStart = await helper.blogsInDB()
   const blogToDelete = blogsAtStart[0]
 
@@ -98,6 +98,21 @@ test('deletes a blog successfully', async () => {
 
   assert.strictEqual(blogsAtStart.length - 1, blogsAtEnd.length)
   assert.strictEqual(titlesAtEnd.includes(blogToDelete.title), false)
+})
+
+test('blog is updated successfully', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const blogToUpdate = { ...blogsAtStart[0], likes: 130 }
+
+  await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(blogToUpdate)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()
+  const updatedBlog = blogsAtEnd.find((blog) => blog.id === blogToUpdate.id)
+  assert.strictEqual(updatedBlog.likes, blogToUpdate.likes)
 })
 
 after(async () => {
