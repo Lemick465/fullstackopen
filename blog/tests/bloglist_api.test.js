@@ -10,7 +10,7 @@ const supertest = require('supertest')
 
 const api = supertest(app)
 
-describe('blogs', async () => {
+describe('GET /api/blogs/', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
@@ -34,10 +34,48 @@ describe('blogs', async () => {
     const verifyIdExist = Object.hasOwn(blogs[0], 'id')
     assert.strictEqual(verifyIdExist, true)
   })
+})
 
-  test('check if blogs are saved successfully', async () => {
-    const initialBlogs = await helper.blogsInDB()
+describe('GET /api/blogs/:id', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
 
+  test('check if blog has a unique id', async () => {
+    const blogs = await helper.blogsInDB()
+    const verifyIdExist = Object.hasOwn(blogs[0], 'id')
+    assert.strictEqual(verifyIdExist, true)
+  })
+})
+
+describe('POST /api/blogs', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+
+    const testUser = await new User({
+      username: 'testUser',
+      name: 'Test User',
+      passwordHash,
+    })
+
+    await testUser.save()
+
+    const blog = await new Blog({
+      title: 'Unit Testing',
+      author: 'Unit Tester',
+      url: 'https://example.com/unit-testing',
+      likes: 125,
+      user: testUser._id,
+    })
+
+    await blog.save()
+  })
+
+  test('user id missing or not valid', async () => {
     const newBlog = {
       title: 'A blog created by test',
       author: 'Test Author',
@@ -45,62 +83,66 @@ describe('blogs', async () => {
       likes: 0,
     }
 
-    await api
+    const response = await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(201)
+      .expect(400)
       .expect('Content-Type', /application\/json/)
 
-    const blogsAtEnd = await helper.blogsInDB()
-
-    assert.strictEqual(blogsAtEnd.length, initialBlogs.length + 1)
-
-    const titles = blogsAtEnd.map((blog) => blog.title)
-    assert.strictEqual(titles.includes(newBlog.title), true)
+    assert(response.body.error.includes('user id missing or not valid'))
   })
 
-  test('set default value if likes property is missing', async () => {
-    const newBlog = {
-      title: 'A blog created by test',
-      author: 'Test Author',
-      url: 'http://example.com/test-blog',
-    }
-
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
-
-    const blogsAtEnd = await helper.blogsInDB()
-    const recentSave = blogsAtEnd.find((blog) => blog.title === newBlog.title)
-    const likesFieldExist = Object.hasOwn(recentSave, 'likes')
-    assert.strictEqual(likesFieldExist, true)
-    assert.strictEqual(recentSave.likes, 0)
-  })
-
-  test('status code 400 is returned if title or url is missing', async () => {
-    const newBlog = {
-      // title: 'A blog created by test',
-      author: 'Test Author',
-      url: 'http://example.com/test-blog',
-      likes: 0,
-    }
-
-    await api.post('/api/blogs').send(newBlog).expect(400)
-  })
-
-  test('delete a blog successfully', async () => {
+  test('blog with missing title or url field', async () => {
     const blogsAtStart = await helper.blogsInDB()
-    const blogToDelete = blogsAtStart[0]
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    const newBlog = {
+      author: 'Test Author',
+      url: 'http://example.com/test-blog',
+      likes: 0,
+    }
+
+    const response = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
 
     const blogsAtEnd = await helper.blogsInDB()
-    const titlesAtEnd = blogsAtEnd.map((b) => b.title)
+    const titles = blogsAtEnd.map((blog) => blog.title)
+    assert(!titles.includes(response.body.title))
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+  })
 
-    assert.strictEqual(blogsAtStart.length - 1, blogsAtEnd.length)
-    assert.strictEqual(titlesAtEnd.includes(blogToDelete.title), false)
+  test('blog is created successfully with user id', async () => {
+    const result = await User.find({})
+    const userInDb = result.map((user) => user.toJSON())
+    const blogsAtStart = await helper.blogsInDB()
+    const newBlog = {
+      title: 'A blog created by test',
+      author: 'Test Author',
+      url: 'http://example.com/test-blog',
+      likes: 0,
+      user: userInDb[0].id,
+    }
+
+    const response = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDB()
+    const hasUserId = Object.hasOwn(response.body, 'user')
+    assert(hasUserId, true)
+
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length + 1)
+  })
+})
+
+describe('PUT /api/blogs/:id', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
   })
 
   test('blog is updated successfully', async () => {
@@ -116,6 +158,26 @@ describe('blogs', async () => {
     const blogsAtEnd = await helper.blogsInDB()
     const updatedBlog = blogsAtEnd.find((blog) => blog.id === blogToUpdate.id)
     assert.strictEqual(updatedBlog.likes, blogToUpdate.likes)
+  })
+})
+
+describe('DELETE /api/blogs/:id', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
+  test('delete a blog successfully', async () => {
+    const blogsAtStart = await helper.blogsInDB()
+    const blogToDelete = blogsAtStart[0]
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+    const blogsAtEnd = await helper.blogsInDB()
+    const titlesAtEnd = blogsAtEnd.map((b) => b.title)
+
+    assert.strictEqual(blogsAtStart.length - 1, blogsAtEnd.length)
+    assert.strictEqual(titlesAtEnd.includes(blogToDelete.title), false)
   })
 })
 
@@ -213,7 +275,7 @@ describe('users', () => {
     const newUser = {
       username: 'newUser',
       name: 'trial',
-      password: '12'
+      password: '12',
     }
 
     const response = await api
