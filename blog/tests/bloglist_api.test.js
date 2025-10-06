@@ -181,7 +181,7 @@ describe('DELETE /api/blogs/:id', () => {
   })
 })
 
-describe('users', () => {
+describe('POST /api/users', () => {
   beforeEach(async () => {
     await User.deleteMany({})
 
@@ -190,14 +190,14 @@ describe('users', () => {
     await user.save()
   })
 
-  test('are returned as json', async () => {
+  test('users are returned as json', async () => {
     await api
       .get('/api/users')
       .expect(200)
       .expect('Content-Type', /application\/json/)
   })
 
-  test('can be created', async () => {
+  test('users can be created', async () => {
     const userAtStart = await helper.usersInDB()
 
     const newUser = {
@@ -219,7 +219,7 @@ describe('users', () => {
     assert.strictEqual(usersAtEnd.length, userAtStart.length + 1)
   })
 
-  test('are not created if invalid', async () => {
+  test('users are not created if invalid', async () => {
     const usersAtStart = await helper.usersInDB()
 
     const invalidUser = {
@@ -241,7 +241,7 @@ describe('users', () => {
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
 
-  test('with duplcate usernames are not allowed', async () => {
+  test('users with duplcate usernames are not allowed', async () => {
     const duplcateUser = {
       username: 'testUser',
       name: 'test',
@@ -257,7 +257,7 @@ describe('users', () => {
     assert(response.body.error.includes('expected `username` to be unique'))
   })
 
-  test('with missing fields are not created', async () => {
+  test('users with missing fields are not created', async () => {
     const newUser = {
       name: 'trial',
     }
@@ -271,7 +271,7 @@ describe('users', () => {
     assert(response.body.error.includes('username and password are required'))
   })
 
-  test('with short passwords are not created', async () => {
+  test('users with short passwords are not created', async () => {
     const newUser = {
       username: 'newUser',
       name: 'trial',
@@ -285,6 +285,59 @@ describe('users', () => {
       .expect('Content-Type', /application\/json/)
 
     assert(response.body.error.includes('password is too short'))
+  })
+})
+
+describe('POST /api/login', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+
+    const testUser = await new User({
+      username: 'testUser',
+      name: 'Test User',
+      passwordHash,
+    })
+
+    await testUser.save()
+
+    const blog = await new Blog({
+      title: 'Unit Testing',
+      author: 'Unit Tester',
+      url: 'https://example.com/unit-testing',
+      likes: 125,
+      user: testUser._id,
+    })
+
+    await blog.save()
+  })
+
+  test('user can login successfully', async () => {
+    const usersCredentials = {
+      username: 'testUser',
+      password: 'sekret'
+    }
+
+    await api
+      .post('/api/login')
+      .send(usersCredentials)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+  })
+
+  test('user cannot login with wrong credentials', async () => {
+    const usersCredentials = {
+      username: 'testUser',
+      password: 'sekr'
+    }
+
+    await api
+      .post('/api/login')
+      .send(usersCredentials)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
   })
 })
 
