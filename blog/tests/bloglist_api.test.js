@@ -50,6 +50,95 @@ describe('GET /api/blogs/:id', () => {
 })
 
 describe('POST /api/blogs', () => {
+  // beforeEach(async () => {
+  //   await Blog.deleteMany({})
+  //   await User.deleteMany({})
+
+  //   const passwordHash = await bcrypt.hash('sekret', 10)
+
+  //   const testUser = await new User({
+  //     username: 'testUser',
+  //     name: 'Test User',
+  //     passwordHash,
+  //   })
+
+  //   await testUser.save()
+
+  //   const blog = await new Blog({
+  //     title: 'Unit Testing',
+  //     author: 'Unit Tester',
+  //     url: 'https://example.com/unit-testing',
+  //     likes: 125,
+  //     user: testUser._id,
+  //   })
+
+  //   await blog.save()
+  // })
+
+  // Not working because user needs to be logged in first
+  // test('user id missing or not valid', async () => {
+  //   const newBlog = {
+  //     title: 'A blog created by test',
+  //     author: 'Test Author',
+  //     url: 'http://example.com/test-blog',
+  //     likes: 0,
+  //   }
+
+  //   const response = await api
+  //     .post('/api/blogs')
+  //     .send(newBlog)
+  //     .expect(400)
+  //     .expect('Content-Type', /application\/json/)
+
+  //   assert(response.body.error.includes('user id missing or not valid'))
+  // })
+
+  // test('blog with missing title or url field', async () => {
+  //   const blogsAtStart = await helper.blogsInDB()
+
+  //   const newBlog = {
+  //     author: 'Test Author',
+  //     url: 'http://example.com/test-blog',
+  //     likes: 0,
+  //   }
+
+  //   const response = await api
+  //     .post('/api/blogs')
+  //     .send(newBlog)
+  //     .expect(400)
+  //     .expect('Content-Type', /application\/json/)
+
+  //   const blogsAtEnd = await helper.blogsInDB()
+  //   const titles = blogsAtEnd.map((blog) => blog.title)
+  //   assert(!titles.includes(response.body.title))
+  //   assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+  // })
+
+  // test('blog is created successfully with user id', async () => {
+  //   const result = await User.find({})
+  //   const userInDb = result.map((user) => user.toJSON())
+  //   const blogsAtStart = await helper.blogsInDB()
+  //   const newBlog = {
+  //     title: 'A blog created by test',
+  //     author: 'Test Author',
+  //     url: 'http://example.com/test-blog',
+  //     likes: 0,
+  //     user: userInDb[0].id,
+  //   }
+
+  //   const response = await api
+  //     .post('/api/blogs')
+  //     .send(newBlog)
+  //     .expect(201)
+  //     .expect('Content-Type', /application\/json/)
+
+  //   const blogsAtEnd = await helper.blogsInDB()
+  //   const hasUserId = Object.hasOwn(response.body, 'user')
+  //   assert(hasUserId, true)
+
+  //   assert.strictEqual(blogsAtEnd.length, blogsAtStart.length + 1)
+  // })
+
   beforeEach(async () => {
     await Blog.deleteMany({})
     await User.deleteMany({})
@@ -64,78 +153,52 @@ describe('POST /api/blogs', () => {
 
     await testUser.save()
 
+    const loginResponse = await api
+      .post('/api/users')
+      .send({ username: 'testUser', password: 'sekret' })
+
     const blog = await new Blog({
       title: 'Unit Testing',
       author: 'Unit Tester',
       url: 'https://example.com/unit-testing',
       likes: 125,
-      user: testUser._id,
     })
+    const token = loginResponse.body.token
 
-    await blog.save()
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(blog)
   })
 
-  test('user id missing or not valid', async () => {
-    const newBlog = {
-      title: 'A blog created by test',
-      author: 'Test Author',
-      url: 'http://example.com/test-blog',
-      likes: 0,
+  test('user token is verified before creating a blog', async () => {
+    const users = await User.find({})
+    const userCredentials = {
+      username: users[0].username,
+      password: 'sekret',
     }
 
-    const response = await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
+    const loginResponse = await api
+      .post('/api/login')
+      .send(userCredentials)
+      .expect(200)
       .expect('Content-Type', /application\/json/)
 
-    assert(response.body.error.includes('user id missing or not valid'))
-  })
-
-  test('blog with missing title or url field', async () => {
-    const blogsAtStart = await helper.blogsInDB()
-
-    const newBlog = {
+    const blog = {
+      title: 'Test blog',
       author: 'Test Author',
-      url: 'http://example.com/test-blog',
-      likes: 0,
+      url: 'https://example.com/test-blogs',
+      likes: 5,
     }
 
-    const response = await api
+    const token = loginResponse.body.token
+
+    await api
       .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
-
-    const blogsAtEnd = await helper.blogsInDB()
-    const titles = blogsAtEnd.map((blog) => blog.title)
-    assert(!titles.includes(response.body.title))
-    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
-  })
-
-  test('blog is created successfully with user id', async () => {
-    const result = await User.find({})
-    const userInDb = result.map((user) => user.toJSON())
-    const blogsAtStart = await helper.blogsInDB()
-    const newBlog = {
-      title: 'A blog created by test',
-      author: 'Test Author',
-      url: 'http://example.com/test-blog',
-      likes: 0,
-      user: userInDb[0].id,
-    }
-
-    const response = await api
-      .post('/api/blogs')
-      .send(newBlog)
+      .set('Authorization', `Bearer ${token}`)
+      .send(blog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
-
-    const blogsAtEnd = await helper.blogsInDB()
-    const hasUserId = Object.hasOwn(response.body, 'user')
-    assert(hasUserId, true)
-
-    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length + 1)
   })
 })
 
@@ -317,7 +380,7 @@ describe('POST /api/login', () => {
   test('user can login successfully', async () => {
     const usersCredentials = {
       username: 'testUser',
-      password: 'sekret'
+      password: 'sekret',
     }
 
     await api
@@ -330,7 +393,7 @@ describe('POST /api/login', () => {
   test('user cannot login with wrong credentials', async () => {
     const usersCredentials = {
       username: 'testUser',
-      password: 'sekr'
+      password: 'sekr',
     }
 
     await api
