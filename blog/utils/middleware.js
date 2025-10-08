@@ -23,11 +23,26 @@ const errorHandler = (error, request, response, next) => {
     error.message.includes('E11000 duplicate key error collection')
   ) {
     response.status(400).json({ error: 'expected `username` to be unique' })
-  }else if(error.name === 'JsonWebTokenError'){
-    response.status(401).json({error: 'invalid token'})
+  } else if (error.name === 'JsonWebTokenError') {
+    response.status(401).json({ error: 'invalid token' })
   }
 
   next(error)
 }
 
-module.exports = { requestLogger, unknownEndpoint, errorHandler }
+const tokenExtractor = (request, response, next) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    request.token = authorization.replace('Bearer ', '')
+  } else {
+    request.token = null
+  }
+  next()
+}
+
+module.exports = {
+  requestLogger,
+  unknownEndpoint,
+  errorHandler,
+  tokenExtractor,
+}
