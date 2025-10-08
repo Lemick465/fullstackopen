@@ -200,6 +200,36 @@ describe('POST /api/blogs', () => {
       .expect(201)
       .expect('Content-Type', /application\/json/)
   })
+
+  test('blogs cannot be saved with a wrong token', async () => {
+    const users = await User.find({})
+    const userCredentials = {
+      username: users[0].username,
+      password: 'sekret',
+    }
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send(userCredentials)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const blog = {
+      title: 'Test blog',
+      author: 'Test Author',
+      url: 'https://example.com/test-blogs',
+      likes: 5,
+    }
+
+    const token = loginResponse.body.token
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}b`)
+      .send(blog)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+  })
 })
 
 describe('PUT /api/blogs/:id', () => {
