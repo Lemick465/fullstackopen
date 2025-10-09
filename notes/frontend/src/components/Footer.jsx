@@ -1,17 +1,17 @@
 const Footer = () => {
-    const footerStyle = {
-        color: "green",
-        fontStyle:  "italic"
-    }
+  const footerStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+  }
 
-    return (
-        <div style={footerStyle}>
-            <br/>
-            <p>
-                Note app, Department of Computer, University of Helsinki 2025
-            </p>
-        </div>
-    )
+  return (
+    <div style={footerStyle}>
+      <br />
+      <p>
+        Note app, Department of Computer Science, University of Helsinki 2025
+      </p>
+    </div>
+  )
 }
 
-export default Footer;
+export default Footer
